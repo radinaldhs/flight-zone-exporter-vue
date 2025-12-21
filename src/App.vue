@@ -9,7 +9,7 @@
         </div>
 
         <div v-if="isAuthenticated" class="flex items-center gap-4">
-          <span class="text-sm text-muted-foreground">{{ authUser?.username }}</span>
+          <span class="text-sm text-muted-foreground">{{ authUser?.gis_auth_username }}</span>
           <Button variant="outline" size="sm" @click="handleReset">
             <RotateCcw class="h-4 w-4" />
             Reset

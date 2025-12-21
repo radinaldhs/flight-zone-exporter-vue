@@ -12,25 +12,26 @@
       <form @submit.prevent="handleSubmit" class="space-y-6">
         <div class="space-y-4">
           <div>
-            <Label for="username">Username</Label>
+            <Label for="gisAuthUsername">GIS Auth Username</Label>
             <Input
-              id="username"
-              v-model="form.username"
+              id="gisAuthUsername"
+              v-model="form.gis_auth_username"
               type="text"
               required
-              placeholder="johndoe"
+              placeholder="agasha123"
               class="mt-2"
               :disabled="loading"
             />
           </div>
 
           <div>
-            <Label for="password">Password</Label>
+            <Label for="gisAuthPassword">GIS Auth Password</Label>
             <Input
-              id="password"
-              v-model="form.password"
+              id="gisAuthPassword"
+              v-model="form.gis_auth_password"
               type="password"
               required
+              maxlength="72"
               placeholder="••••••••"
               class="mt-2"
               :disabled="loading"
@@ -81,8 +82,8 @@ const authStore = useAuthStore()
 const { loading, error } = storeToRefs(authStore)
 
 const form = ref({
-  username: '',
-  password: ''
+  gis_auth_username: '',
+  gis_auth_password: ''
 })
 
 const handleSubmit = async () => {

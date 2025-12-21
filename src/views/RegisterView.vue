@@ -10,58 +10,11 @@
       </div>
 
       <form @submit.prevent="handleSubmit" class="space-y-6">
-        <!-- User Information -->
-        <div class="space-y-4">
-          <h3 class="font-semibold text-lg">Account Information</h3>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label for="username">Username *</Label>
-              <Input
-                id="username"
-                v-model="form.username"
-                type="text"
-                required
-                minlength="3"
-                placeholder="johndoe"
-                class="mt-2"
-                :disabled="loading"
-              />
-            </div>
-
-            <div>
-              <Label for="password">Password *</Label>
-              <Input
-                id="password"
-                v-model="form.password"
-                type="password"
-                required
-                minlength="6"
-                placeholder="••••••••"
-                class="mt-2"
-                :disabled="loading"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label for="fullName">Full Name</Label>
-            <Input
-              id="fullName"
-              v-model="form.full_name"
-              type="text"
-              placeholder="John Doe"
-              class="mt-2"
-              :disabled="loading"
-            />
-          </div>
-        </div>
-
         <!-- GIS Credentials -->
-        <div class="space-y-4 pt-6 border-t">
+        <div class="space-y-4">
           <h3 class="font-semibold text-lg">ArcGIS Credentials</h3>
           <p class="text-sm text-muted-foreground">
-            These credentials will be securely stored and used for ArcGIS operations
+            Your GIS Auth credentials will be used to login to the app and for ArcGIS operations
           </p>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -85,6 +38,7 @@
                 v-model="form.gis_auth_password"
                 type="password"
                 required
+                maxlength="72"
                 placeholder="••••••••"
                 class="mt-2"
                 :disabled="loading"
@@ -113,11 +67,24 @@
                 v-model="form.gis_password"
                 type="password"
                 required
+                maxlength="72"
                 placeholder="••••••••"
                 class="mt-2"
                 :disabled="loading"
               />
             </div>
+          </div>
+
+          <div>
+            <Label for="fullName">Full Name (optional)</Label>
+            <Input
+              id="fullName"
+              v-model="form.full_name"
+              type="text"
+              placeholder="John Doe"
+              class="mt-2"
+              :disabled="loading"
+            />
           </div>
         </div>
 
@@ -164,13 +131,11 @@ const authStore = useAuthStore()
 const { loading, error } = storeToRefs(authStore)
 
 const form = ref({
-  username: '',
-  full_name: '',
-  password: '',
   gis_auth_username: '',
   gis_auth_password: '',
   gis_username: '',
-  gis_password: ''
+  gis_password: '',
+  full_name: ''
 })
 
 const handleSubmit = async () => {
