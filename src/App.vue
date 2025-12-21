@@ -8,10 +8,15 @@
           <h1 class="text-xl font-bold">Flight Zone Exporter</h1>
         </div>
 
-        <div class="flex items-center gap-4">
+        <div v-if="isAuthenticated" class="flex items-center gap-4">
+          <span class="text-sm text-muted-foreground">{{ authUser?.email }}</span>
           <Button variant="outline" size="sm" @click="handleReset">
             <RotateCcw class="h-4 w-4" />
             Reset
+          </Button>
+          <Button variant="ghost" size="sm" @click="handleLogout">
+            <LogOut class="h-4 w-4" />
+            Logout
           </Button>
         </div>
       </div>
@@ -68,17 +73,31 @@
 
 <script setup>
 import { storeToRefs } from 'pinia'
-import { Plane, RotateCcw, AlertCircle, CheckCircle, X } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
+import { Plane, RotateCcw, LogOut, AlertCircle, CheckCircle, X } from 'lucide-vue-next'
 import Button from './components/ui/Button.vue'
 import Alert from './components/ui/Alert.vue'
 import { useFlightZoneStore } from './stores/flightZone'
+import { useAuthStore } from './stores/auth'
 
+const router = useRouter()
 const store = useFlightZoneStore()
+const authStore = useAuthStore()
+
 const { error, successMessage } = storeToRefs(store)
+const { isAuthenticated, user: authUser } = storeToRefs(authStore)
 
 const handleReset = () => {
   if (confirm('Are you sure you want to reset all fields?')) {
     store.reset()
+  }
+}
+
+const handleLogout = () => {
+  if (confirm('Are you sure you want to logout?')) {
+    authStore.logout()
+    store.reset()
+    router.push('/login')
   }
 }
 
