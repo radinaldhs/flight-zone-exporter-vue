@@ -16,19 +16,6 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label for="email">Email address *</Label>
-              <Input
-                id="email"
-                v-model="form.email"
-                type="email"
-                required
-                placeholder="you@example.com"
-                class="mt-2"
-                :disabled="loading"
-              />
-            </div>
-
-            <div>
               <Label for="username">Username *</Label>
               <Input
                 id="username"
@@ -37,20 +24,6 @@
                 required
                 minlength="3"
                 placeholder="johndoe"
-                class="mt-2"
-                :disabled="loading"
-              />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label for="fullName">Full Name</Label>
-              <Input
-                id="fullName"
-                v-model="form.full_name"
-                type="text"
-                placeholder="John Doe"
                 class="mt-2"
                 :disabled="loading"
               />
@@ -69,6 +42,18 @@
                 :disabled="loading"
               />
             </div>
+          </div>
+
+          <div>
+            <Label for="fullName">Full Name</Label>
+            <Input
+              id="fullName"
+              v-model="form.full_name"
+              type="text"
+              placeholder="John Doe"
+              class="mt-2"
+              :disabled="loading"
+            />
           </div>
         </div>
 
@@ -179,7 +164,6 @@ const authStore = useAuthStore()
 const { loading, error } = storeToRefs(authStore)
 
 const form = ref({
-  email: '',
   username: '',
   full_name: '',
   password: '',

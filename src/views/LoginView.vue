@@ -12,13 +12,13 @@
       <form @submit.prevent="handleSubmit" class="space-y-6">
         <div class="space-y-4">
           <div>
-            <Label for="email">Email address</Label>
+            <Label for="username">Username</Label>
             <Input
-              id="email"
-              v-model="form.email"
-              type="email"
+              id="username"
+              v-model="form.username"
+              type="text"
               required
-              placeholder="you@example.com"
+              placeholder="johndoe"
               class="mt-2"
               :disabled="loading"
             />
@@ -81,7 +81,7 @@ const authStore = useAuthStore()
 const { loading, error } = storeToRefs(authStore)
 
 const form = ref({
-  email: '',
+  username: '',
   password: ''
 })
 
