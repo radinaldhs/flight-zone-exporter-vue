@@ -14,8 +14,16 @@
         <div class="space-y-4">
           <h3 class="font-semibold text-lg">ArcGIS Credentials</h3>
           <p class="text-sm text-muted-foreground">
-            Your GIS Auth credentials will be used to login to the app and for ArcGIS operations
+            Use your EXISTING GIS Auth credentials from <strong>maps.sinarmasforestry.com</strong>
           </p>
+          <Alert variant="warning" class="py-2">
+            <AlertCircle class="h-4 w-4" />
+            <div class="ml-2">
+              <p class="text-xs">
+                You must use the same username and password you use to login to the ArcGIS portal
+              </p>
+            </div>
+          </Alert>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
