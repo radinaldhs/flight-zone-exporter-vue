@@ -46,35 +46,6 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label for="gisUsername">GIS Username *</Label>
-              <Input
-                id="gisUsername"
-                v-model="form.gis_username"
-                type="text"
-                required
-                placeholder="fmiseditor"
-                class="mt-2"
-                :disabled="loading"
-              />
-            </div>
-
-            <div>
-              <Label for="gisPassword">GIS Password *</Label>
-              <Input
-                id="gisPassword"
-                v-model="form.gis_password"
-                type="password"
-                required
-                maxlength="72"
-                placeholder="••••••••"
-                class="mt-2"
-                :disabled="loading"
-              />
-            </div>
-          </div>
-
           <div>
             <Label for="fullName">Full Name (optional)</Label>
             <Input
@@ -133,8 +104,6 @@ const { loading, error } = storeToRefs(authStore)
 const form = ref({
   gis_auth_username: '',
   gis_auth_password: '',
-  gis_username: '',
-  gis_password: '',
   full_name: ''
 })
 
