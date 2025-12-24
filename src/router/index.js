@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
+import PaymentCallbackView from '../views/PaymentCallbackView.vue'
+import SubscriptionExpiredView from '../views/SubscriptionExpiredView.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
@@ -24,6 +26,18 @@ const router = createRouter({
       name: 'register',
       component: RegisterView,
       meta: { guest: true }
+    },
+    {
+      path: '/payment/callback',
+      name: 'payment-callback',
+      component: PaymentCallbackView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/subscription/expired',
+      name: 'subscription-expired',
+      component: SubscriptionExpiredView,
+      meta: { requiresAuth: true }
     }
   ]
 })

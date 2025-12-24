@@ -40,9 +40,11 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await axios.post(`${API_URL}/api/auth/register`, userData)
 
+      // Always set token (user gets it even if payment required)
       setToken(response.data.access_token)
       setUser(response.data.user)
 
+      // Return full response (includes payment info if required)
       return response.data
     } catch (err) {
       error.value = err.response?.data?.detail || err.message || 'Registration failed'

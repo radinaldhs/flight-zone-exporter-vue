@@ -33,6 +33,12 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       router.push('/login')
+    } else if (error.response?.status === 402) {
+      // Payment Required - subscription expired
+      router.push({
+        name: 'subscription-expired',
+        query: { message: error.response?.data?.detail }
+      })
     }
 
     const message = error.response?.data?.detail || error.message || 'An error occurred'

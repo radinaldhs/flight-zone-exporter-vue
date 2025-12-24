@@ -117,8 +117,16 @@ const form = ref({
 
 const handleSubmit = async () => {
   try {
-    await authStore.register(form.value)
-    router.push('/')
+    const response = await authStore.register(form.value)
+
+    // Check if payment is required
+    if (response.requires_payment) {
+      // Redirect to Midtrans payment page
+      window.location.href = response.payment_url
+    } else {
+      // Whitelisted user - go to home
+      router.push('/')
+    }
   } catch (err) {
     console.error('Registration failed:', err)
   }
