@@ -20,8 +20,6 @@
 
         <!-- SECTION 1: Initial Upload (Always Visible) -->
         <InitialUploadSection
-          v-model:spk-number="spkNumber"
-          v-model:key-id="keyId"
           v-model:kml-file="kmlFile"
           v-model:excel-file="excelFile"
           :disabled="loading || workflowPath !== null"

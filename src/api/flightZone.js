@@ -4,6 +4,12 @@ export const flightZoneAPI = {
   // Health check
   healthCheck: () => apiClient.get('/api/health'),
 
+  // Dashboard cascading queries
+  getRegions: () => apiClient.get('/api/arcgis/dashboard/regions'),
+  getDistricts: (region) => apiClient.get('/api/arcgis/dashboard/districts', { params: { region } }),
+  getPetaks: (district) => apiClient.get('/api/arcgis/dashboard/petaks', { params: { district } }),
+  getSpkNumbers: (petak) => apiClient.get('/api/arcgis/dashboard/spk-numbers', { params: { petak } }),
+
   // SPK operations
   checkSPK: (spkNumber) =>
     apiClient.post('/api/arcgis/spk/check', { spk_number: spkNumber }),

@@ -4,7 +4,7 @@
       <div>
         <h2 class="text-2xl font-bold">Step 1: Upload Files</h2>
         <p class="text-sm text-muted-foreground mt-1">
-          Upload required files and enter flight zone details
+          Select flight zone details and upload required files
         </p>
       </div>
       <div v-if="completed" class="flex items-center gap-2 text-green-600">
@@ -14,32 +14,67 @@
     </div>
 
     <div class="space-y-6">
-      <!-- SPK Number and Key ID Row -->
+      <!-- Cascading Dropdowns -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label for="spkNumber">SPK Number *</Label>
-          <Input
-            id="spkNumber"
-            v-model="spkNumberModel"
-            type="text"
-            required
-            placeholder="Enter SPK number"
+          <Label for="region">Region *</Label>
+          <Select
+            id="region"
+            :model-value="store.selectedRegion"
+            :options="store.regions"
+            placeholder="Select Region"
             class="mt-2"
-            :disabled="disabled"
+            :disabled="disabled || store.cascadeLoading"
+            :loading="store.cascadeLoading && store.regions.length === 0"
+            @update:model-value="store.selectRegion"
           />
         </div>
 
         <div>
-          <Label for="keyId">Key ID *</Label>
-          <Input
-            id="keyId"
-            v-model="keyIdModel"
-            type="text"
-            required
-            placeholder="Enter key ID"
+          <Label for="district">District *</Label>
+          <Select
+            id="district"
+            :model-value="store.selectedDistrict"
+            :options="store.districts"
+            placeholder="Select District"
             class="mt-2"
-            :disabled="disabled"
+            :disabled="disabled || !store.selectedRegion || store.cascadeLoading"
+            :loading="store.cascadeLoading && store.selectedRegion && store.districts.length === 0"
+            @update:model-value="store.selectDistrict"
           />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label for="keyId">Key ID (Petak) *</Label>
+          <Select
+            id="keyId"
+            :model-value="store.keyId"
+            :options="store.petaks"
+            placeholder="Select Key ID"
+            class="mt-2"
+            :disabled="disabled || !store.selectedDistrict || store.cascadeLoading"
+            :loading="store.cascadeLoading && store.selectedDistrict && store.petaks.length === 0"
+            @update:model-value="store.selectPetak"
+          />
+        </div>
+
+        <div>
+          <Label for="spkNumber">SPK Number *</Label>
+          <Select
+            id="spkNumber"
+            :model-value="store.spkNumber"
+            :options="spkNumberOptions"
+            placeholder="Select SPK Number"
+            class="mt-2"
+            :disabled="disabled || !store.keyId || store.cascadeLoading"
+            :loading="store.cascadeLoading && store.keyId && store.spkNumbers.length === 0"
+            @update:model-value="store.selectSpkNumber"
+          />
+          <p v-if="store.activity" class="text-xs text-muted-foreground mt-1">
+            Activity: {{ store.activity }}
+          </p>
         </div>
       </div>
 
@@ -88,23 +123,16 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { CheckCircle2, Info } from 'lucide-vue-next'
 import Card from '@/components/ui/Card.vue'
-import Input from '@/components/ui/Input.vue'
+import Select from '@/components/ui/Select.vue'
 import Label from '@/components/ui/Label.vue'
 import FileUpload from '@/components/FileUpload.vue'
 import Alert from '@/components/ui/Alert.vue'
+import { useFlightZoneStore } from '@/stores/flightZone'
 
 const props = defineProps({
-  spkNumber: {
-    type: String,
-    default: ''
-  },
-  keyId: {
-    type: String,
-    default: ''
-  },
   kmlFile: {
     type: File,
     default: null
@@ -123,17 +151,13 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:spkNumber', 'update:keyId', 'update:kmlFile', 'update:excelFile'])
+const emit = defineEmits(['update:kmlFile', 'update:excelFile'])
 
-const spkNumberModel = computed({
-  get: () => props.spkNumber,
-  set: (value) => emit('update:spkNumber', value)
-})
+const store = useFlightZoneStore()
 
-const keyIdModel = computed({
-  get: () => props.keyId,
-  set: (value) => emit('update:keyId', value)
-})
+const spkNumberOptions = computed(() =>
+  store.spkNumbers.map(s => s.spk_number)
+)
 
 const kmlFileModel = computed({
   get: () => props.kmlFile,
@@ -143,5 +167,11 @@ const kmlFileModel = computed({
 const excelFileModel = computed({
   get: () => props.excelFile,
   set: (value) => emit('update:excelFile', value)
+})
+
+onMounted(() => {
+  if (store.regions.length === 0) {
+    store.fetchRegions()
+  }
 })
 </script>

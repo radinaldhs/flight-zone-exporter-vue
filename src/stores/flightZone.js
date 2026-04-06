@@ -10,6 +10,16 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
   const spkNumber = ref('')
   const keyId = ref('')
 
+  // Cascade dropdown state
+  const regions = ref([])
+  const districts = ref([])
+  const petaks = ref([])
+  const spkNumbers = ref([])
+  const selectedRegion = ref('')
+  const selectedDistrict = ref('')
+  const activity = ref('')
+  const cascadeLoading = ref(false)
+
   const loading = ref(false)
   const error = ref(null)
   const successMessage = ref(null)
@@ -104,6 +114,81 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
     error.value = null
   }
 
+  const fetchRegions = async () => {
+    cascadeLoading.value = true
+    try {
+      const response = await flightZoneAPI.getRegions()
+      regions.value = response.data.values
+    } catch (err) {
+      error.value = err.message
+    } finally {
+      cascadeLoading.value = false
+    }
+  }
+
+  const selectRegion = async (value) => {
+    selectedRegion.value = value
+    selectedDistrict.value = ''
+    keyId.value = ''
+    spkNumber.value = ''
+    activity.value = ''
+    districts.value = []
+    petaks.value = []
+    spkNumbers.value = []
+    if (!value) return
+    cascadeLoading.value = true
+    try {
+      const response = await flightZoneAPI.getDistricts(value)
+      districts.value = response.data.values
+    } catch (err) {
+      error.value = err.message
+    } finally {
+      cascadeLoading.value = false
+    }
+  }
+
+  const selectDistrict = async (value) => {
+    selectedDistrict.value = value
+    keyId.value = ''
+    spkNumber.value = ''
+    activity.value = ''
+    petaks.value = []
+    spkNumbers.value = []
+    if (!value) return
+    cascadeLoading.value = true
+    try {
+      const response = await flightZoneAPI.getPetaks(value)
+      petaks.value = response.data.values
+    } catch (err) {
+      error.value = err.message
+    } finally {
+      cascadeLoading.value = false
+    }
+  }
+
+  const selectPetak = async (value) => {
+    keyId.value = value
+    spkNumber.value = ''
+    activity.value = ''
+    spkNumbers.value = []
+    if (!value) return
+    cascadeLoading.value = true
+    try {
+      const response = await flightZoneAPI.getSpkNumbers(value)
+      spkNumbers.value = response.data.values
+    } catch (err) {
+      error.value = err.message
+    } finally {
+      cascadeLoading.value = false
+    }
+  }
+
+  const selectSpkNumber = (value) => {
+    spkNumber.value = value
+    const match = spkNumbers.value.find(s => s.spk_number === value)
+    activity.value = match ? match.activity : ''
+  }
+
   const clearError = () => {
     error.value = null
   }
@@ -124,6 +209,16 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
     currentStep.value = 1
     processResult.value = null
     spkCheckResult.value = null
+
+    // Reset cascade state
+    regions.value = []
+    districts.value = []
+    petaks.value = []
+    spkNumbers.value = []
+    selectedRegion.value = ''
+    selectedDistrict.value = ''
+    activity.value = ''
+    cascadeLoading.value = false
 
     // Reset workflow path state
     workflowPath.value = null
@@ -380,6 +475,16 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
     processResult,
     spkCheckResult,
 
+    // Cascade dropdown state
+    regions,
+    districts,
+    petaks,
+    spkNumbers,
+    selectedRegion,
+    selectedDistrict,
+    activity,
+    cascadeLoading,
+
     // Workflow path state
     workflowPath,
     editingPhase,
@@ -406,6 +511,11 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
     setEditedShapefileFile,
     setSPKNumber,
     setKeyId,
+    fetchRegions,
+    selectRegion,
+    selectDistrict,
+    selectPetak,
+    selectSpkNumber,
     clearError,
     clearSuccess,
     reset,
