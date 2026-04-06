@@ -86,6 +86,7 @@ const inputRef = ref(null)
 const open = ref(false)
 const searchQuery = ref(props.modelValue)
 const highlightedIndex = ref(-1)
+let debounceTimer = null
 
 const filteredOptions = computed(() => {
   if (!searchQuery.value) return props.options
@@ -97,7 +98,10 @@ function onInput(e) {
   searchQuery.value = e.target.value
   open.value = true
   highlightedIndex.value = -1
-  emit('update:modelValue', e.target.value)
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    emit('update:modelValue', e.target.value)
+  }, 400)
 }
 
 function selectOption(option) {
@@ -143,5 +147,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   document.removeEventListener('mousedown', onClickOutside)
+  clearTimeout(debounceTimer)
 })
 </script>
