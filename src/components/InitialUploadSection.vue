@@ -48,11 +48,11 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label for="keyId">Key ID (Petak) *</Label>
-          <Select
+          <Combobox
             id="keyId"
             :model-value="store.keyId"
             :options="store.petaks"
-            placeholder="Select Key ID"
+            placeholder="Search or type Key ID"
             class="mt-2"
             :disabled="disabled || !store.selectedDistrict || store.cascadeLoading"
             :loading="store.cascadeLoading && store.selectedDistrict && store.petaks.length === 0"
@@ -62,11 +62,11 @@
 
         <div>
           <Label for="spkNumber">SPK Number *</Label>
-          <Select
+          <Combobox
             id="spkNumber"
             :model-value="store.spkNumber"
             :options="spkNumberOptions"
-            placeholder="Select SPK Number"
+            placeholder="Search or type SPK Number"
             class="mt-2"
             :disabled="disabled || !store.keyId || store.cascadeLoading"
             :loading="store.cascadeLoading && store.keyId && store.spkNumbers.length === 0"
@@ -127,6 +127,7 @@ import { computed, onMounted } from 'vue'
 import { CheckCircle2, Info } from 'lucide-vue-next'
 import Card from '@/components/ui/Card.vue'
 import Select from '@/components/ui/Select.vue'
+import Combobox from '@/components/ui/Combobox.vue'
 import Label from '@/components/ui/Label.vue'
 import FileUpload from '@/components/FileUpload.vue'
 import Alert from '@/components/ui/Alert.vue'
