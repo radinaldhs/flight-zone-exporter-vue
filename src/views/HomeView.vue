@@ -198,6 +198,7 @@ const handleResetPath = () => {
 
 const handleFullReset = () => {
   store.reset()
+  store.fetchRegions()
 }
 
 const handleGenerateShapefile = async () => {
