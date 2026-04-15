@@ -9,6 +9,9 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
   const editedShapefileFile = ref(null)
   const spkNumber = ref('')
   const keyId = ref('')
+  const height = ref(2.5)
+  const width = ref(5)
+  const speed = ref(3.5)
 
   // Cascade dropdown state
   const regions = ref([])
@@ -34,6 +37,7 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
   const showPathDecision = ref(false)
   const hasGeneratedShapefile = ref(false)
   const hasProcessedFinal = ref(false)
+  const arcgisUploadDone = ref(false)
   const quickPathStep = ref(1) // 1: upload, 2: process, 3: final
   const editPathStep = ref(1) // 1-6: upload, generate, download, upload-edited, process, final
 
@@ -220,12 +224,17 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
     activity.value = ''
     cascadeLoading.value = false
 
+    height.value = 2.5
+    width.value = 5
+    speed.value = 3.5
+
     // Reset workflow path state
     workflowPath.value = null
     editingPhase.value = null
     showPathDecision.value = false
     hasGeneratedShapefile.value = false
     hasProcessedFinal.value = false
+    arcgisUploadDone.value = false
     quickPathStep.value = 1
     editPathStep.value = 1
   }
@@ -255,6 +264,10 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
     currentStep.value = 1
     error.value = null
     successMessage.value = null
+    height.value = 2.5
+    width.value = 5
+    speed.value = 3.5
+    arcgisUploadDone.value = false
   }
 
   const checkSPK = async () => {
@@ -397,9 +410,16 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
       formData.append('spk_number', spkNumber.value)
       formData.append('key_id', keyId.value)
 
+      if (workflowPath.value === 'edit') {
+        formData.append('height', height.value)
+        formData.append('width', width.value)
+        formData.append('speed', speed.value)
+      }
+
       const response = await flightZoneAPI.uploadToArcGIS(formData)
       successMessage.value = response.data.message
       currentStep.value = 4
+      arcgisUploadDone.value = true
       return response.data
     } catch (err) {
       error.value = err.message
@@ -468,6 +488,9 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
     editedShapefileFile,
     spkNumber,
     keyId,
+    height,
+    width,
+    speed,
     loading,
     error,
     successMessage,
@@ -491,6 +514,7 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
     showPathDecision,
     hasGeneratedShapefile,
     hasProcessedFinal,
+    arcgisUploadDone,
     quickPathStep,
     editPathStep,
 

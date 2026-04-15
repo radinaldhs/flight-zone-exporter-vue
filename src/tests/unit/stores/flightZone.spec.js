@@ -36,6 +36,12 @@ describe('FlightZone Store', () => {
       expect(store.quickPathStep).toBe(1)
       expect(store.editPathStep).toBe(1)
     })
+
+    it('should have correct default values for height, width, and speed', () => {
+      expect(store.height).toBe(2.5)
+      expect(store.width).toBe(5)
+      expect(store.speed).toBe(3.5)
+    })
   })
 
   describe('Computed Properties', () => {
@@ -121,6 +127,32 @@ describe('FlightZone Store', () => {
         expect(store.workflowPath).toBeNull()
         expect(store.hasProcessedFinal).toBe(false)
         expect(store.quickPathStep).toBe(1)
+      })
+
+      it('should reset height, width, and speed to defaults', () => {
+        store.height = 10
+        store.width = 20
+        store.speed = 15
+
+        store.resetWorkflow()
+
+        expect(store.height).toBe(2.5)
+        expect(store.width).toBe(5)
+        expect(store.speed).toBe(3.5)
+      })
+    })
+
+    describe('reset', () => {
+      it('should reset height, width, and speed to defaults', () => {
+        store.height = 10
+        store.width = 20
+        store.speed = 15
+
+        store.reset()
+
+        expect(store.height).toBe(2.5)
+        expect(store.width).toBe(5)
+        expect(store.speed).toBe(3.5)
       })
     })
 
@@ -208,6 +240,68 @@ describe('FlightZone Store', () => {
 
         await expect(store.uploadToArcGIS()).rejects.toThrow()
         expect(store.error).toBeTruthy()
+      })
+
+      it('should append height, width, speed to FormData when workflowPath is edit', async () => {
+        const capturedData = {}
+        mockAxios.onPost('/api/kml/upload-to-arcgis').reply((config) => {
+          for (const [key, value] of config.data.entries()) {
+            capturedData[key] = value
+          }
+          return [200, mockUploadToArcGISResponse]
+        })
+
+        store.setSPKNumber('SPK123')
+        store.setKeyId('KEY456')
+        store.chooseWorkflowPath('edit')
+        store.height = 3.0
+        store.width = 6.0
+        store.speed = 4.5
+
+        await store.uploadToArcGIS()
+
+        expect(capturedData['height']).toBe('3')
+        expect(capturedData['width']).toBe('6')
+        expect(capturedData['speed']).toBe('4.5')
+      })
+
+      it('should NOT append height, width, speed to FormData when workflowPath is quick', async () => {
+        const capturedData = {}
+        mockAxios.onPost('/api/kml/upload-to-arcgis').reply((config) => {
+          for (const [key, value] of config.data.entries()) {
+            capturedData[key] = value
+          }
+          return [200, mockUploadToArcGISResponse]
+        })
+
+        store.setSPKNumber('SPK123')
+        store.setKeyId('KEY456')
+        store.chooseWorkflowPath('quick')
+
+        await store.uploadToArcGIS()
+
+        expect(capturedData['height']).toBeUndefined()
+        expect(capturedData['width']).toBeUndefined()
+        expect(capturedData['speed']).toBeUndefined()
+      })
+
+      it('should NOT append height, width, speed when workflowPath is null', async () => {
+        const capturedData = {}
+        mockAxios.onPost('/api/kml/upload-to-arcgis').reply((config) => {
+          for (const [key, value] of config.data.entries()) {
+            capturedData[key] = value
+          }
+          return [200, mockUploadToArcGISResponse]
+        })
+
+        store.setSPKNumber('SPK123')
+        store.setKeyId('KEY456')
+
+        await store.uploadToArcGIS()
+
+        expect(capturedData['height']).toBeUndefined()
+        expect(capturedData['width']).toBeUndefined()
+        expect(capturedData['speed']).toBeUndefined()
       })
     })
 

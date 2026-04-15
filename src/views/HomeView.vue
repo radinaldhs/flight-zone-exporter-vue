@@ -62,12 +62,31 @@
 
         <!-- SECTION 4: Final Upload (Show after processing complete) -->
         <FinalUploadSection
-          v-if="hasProcessedFinal"
+          v-if="hasProcessedFinal && !arcgisUploadDone"
           :can-upload="canUploadToArcGIS"
           :loading="loading"
+          :workflow-path="workflowPath"
+          v-model:height="height"
+          v-model:width="width"
+          v-model:speed="speed"
           @upload-to-arcgis="handleUploadToArcGIS"
           @download-manual="handleDownloadFinalUpload"
         />
+
+        <!-- SECTION 5: Upload Success -->
+        <Card v-if="arcgisUploadDone" class="p-6 border-2 border-green-200 bg-green-50">
+          <div class="flex flex-col items-center text-center space-y-4">
+            <CheckCircle2 class="h-12 w-12 text-green-600" />
+            <div>
+              <h2 class="text-xl font-bold text-green-900">Upload Successful</h2>
+              <p class="text-sm text-green-800 mt-1">{{ successMessage }}</p>
+            </div>
+            <Button @click="handleFullReset" variant="outline" size="lg" class="mt-4">
+              <RotateCcw class="mr-2 h-4 w-4" />
+              Start New Upload
+            </Button>
+          </div>
+        </Card>
 
       </div>
 
@@ -113,9 +132,10 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import { Loader2, Server } from 'lucide-vue-next'
+import { Loader2, Server, CheckCircle2, RotateCcw } from 'lucide-vue-next'
 
 import Card from '@/components/ui/Card.vue'
+import Button from '@/components/ui/Button.vue'
 import WorkflowSteps from '@/components/WorkflowSteps.vue'
 import PathBadge from '@/components/PathBadge.vue'
 import WorkflowPathSelector from '@/components/WorkflowPathSelector.vue'
@@ -137,6 +157,9 @@ const {
   editedShapefileFile,
   spkNumber,
   keyId,
+  height,
+  width,
+  speed,
   loading,
   processResult,
   workflowPath,
@@ -149,6 +172,8 @@ const {
   canUploadEditedShapefile,
   canProcessEditPath,
   canUploadToArcGIS,
+  arcgisUploadDone,
+  successMessage,
   currentStepDisplay
 } = storeToRefs(store)
 
@@ -169,6 +194,10 @@ const handlePathSelected = (path) => {
 
 const handleResetPath = () => {
   store.resetWorkflow()
+}
+
+const handleFullReset = () => {
+  store.reset()
 }
 
 const handleGenerateShapefile = async () => {

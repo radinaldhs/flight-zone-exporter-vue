@@ -8,6 +8,25 @@
     </div>
 
     <div class="space-y-4">
+      <!-- Flight Parameters (edit path only) -->
+      <div v-if="workflowPath === 'edit'" class="space-y-4 pb-4 border-b">
+        <h3 class="font-semibold text-sm">Flight Parameters</h3>
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            <Label for="height">Height (m)</Label>
+            <input id="height" type="number" step="0.1" min="0.1" :value="height" @input="handleNumberInput($event, 'height', 2.5)" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <Label for="width">Width (m)</Label>
+            <input id="width" type="number" step="0.1" min="0.1" :value="width" @input="handleNumberInput($event, 'width', 5)" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <Label for="speed">Speed (m/s)</Label>
+            <input id="speed" type="number" step="0.1" min="0.1" :value="speed" @input="handleNumberInput($event, 'speed', 3.5)" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          </div>
+        </div>
+      </div>
+
       <!-- Primary Action: Upload to ArcGIS -->
       <Button
         @click="$emit('upload-to-arcgis')"
@@ -60,6 +79,7 @@ import { Upload, Download, Info, Loader2 } from 'lucide-vue-next'
 import Card from '@/components/ui/Card.vue'
 import Button from '@/components/ui/Button.vue'
 import Alert from '@/components/ui/Alert.vue'
+import Label from '@/components/ui/Label.vue'
 
 defineProps({
   canUpload: {
@@ -69,8 +89,33 @@ defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  workflowPath: {
+    type: String,
+    default: null
+  },
+  height: {
+    type: Number,
+    default: 2.5
+  },
+  width: {
+    type: Number,
+    default: 5
+  },
+  speed: {
+    type: Number,
+    default: 3.5
   }
 })
 
-defineEmits(['upload-to-arcgis', 'download-manual'])
+const emit = defineEmits(['upload-to-arcgis', 'download-manual', 'update:height', 'update:width', 'update:speed'])
+
+const handleNumberInput = (event, field, fallback) => {
+  const parsed = parseFloat(event.target.value)
+  if (Number.isFinite(parsed) && parsed > 0) {
+    emit(`update:${field}`, parsed)
+  } else {
+    emit(`update:${field}`, fallback)
+  }
+}
 </script>
