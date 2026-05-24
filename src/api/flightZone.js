@@ -17,30 +17,22 @@ export const flightZoneAPI = {
   deleteSPK: (spkNumber) =>
     apiClient.delete('/api/arcgis/spk', { data: { spk_number: spkNumber } }),
 
-  // File processing
+  // File processing — these now return a binary zip (responseType: 'blob').
+  // Metadata is surfaced via response headers (X-Total-Zones, Content-Disposition).
   generateShapefile: (formData) =>
     apiClient.post('/api/kml/generate-shapefile', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      responseType: 'blob'
     }),
 
   processComplete: (formData) =>
     apiClient.post('/api/kml/process', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      responseType: 'blob'
     }),
 
   uploadToArcGIS: (formData) =>
     apiClient.post('/api/kml/upload-to-arcgis', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
-    }),
-
-  // Downloads
-  downloadShapefileForEdit: () =>
-    apiClient.get('/api/kml/download/shapefile-for-edit', {
-      responseType: 'blob'
-    }),
-
-  downloadFinalUpload: () =>
-    apiClient.get('/api/kml/download/final-upload', {
-      responseType: 'blob'
     })
 }

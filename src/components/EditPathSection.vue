@@ -8,15 +8,14 @@
     </div>
 
     <div class="space-y-6">
-      <!-- Step 2: Generate Shapefile -->
+      <!-- Step 2: Generate & Download Shapefile (combined) -->
       <div class="space-y-3">
         <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Step 2: Generate Shapefile</h3>
+          <h3 class="font-semibold">Step 2: Generate & Download Shapefile</h3>
           <CheckCircle2 v-if="hasGenerated" class="h-5 w-5 text-green-600" />
         </div>
 
         <Button
-          v-if="!hasGenerated"
           @click="$emit('generate')"
           :disabled="!canGenerate || loading"
           class="w-full"
@@ -24,37 +23,22 @@
         >
           <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
           <FileCode v-else class="mr-2 h-4 w-4" />
-          Generate Shapefile from KML
+          {{ hasGenerated ? 'Re-generate & Download' : 'Generate Shapefile from KML' }}
         </Button>
 
         <Alert v-if="hasGenerated" class="bg-green-50 border-green-200">
           <CheckCircle2 class="h-4 w-4 text-green-600" />
           <div class="ml-2">
             <p class="text-sm text-green-900 font-medium">
-              Shapefile generated successfully! Ready to download.
+              Shapefile generated and downloaded.
             </p>
           </div>
         </Alert>
       </div>
 
-      <!-- Step 3: Download for Edit -->
+      <!-- Step 3: Edit in QGIS (informational) -->
       <div v-if="hasGenerated" class="space-y-3 pt-4 border-t">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Step 3: Download & Edit in QGIS</h3>
-          <CheckCircle2 v-if="editingPhase === 'downloaded'" class="h-5 w-5 text-green-600" />
-        </div>
-
-        <Button
-          @click="$emit('download-for-edit')"
-          :disabled="loading"
-          variant="outline"
-          class="w-full"
-          size="lg"
-        >
-          <Download class="mr-2 h-4 w-4" />
-          Download Shapefile for QGIS
-        </Button>
-
+        <h3 class="font-semibold">Step 3: Edit in QGIS</h3>
         <Alert class="bg-blue-50 border-blue-200">
           <Info class="h-4 w-4 text-blue-600" />
           <div class="ml-2">
@@ -62,8 +46,7 @@
               <strong>Instructions:</strong>
             </p>
             <ol class="text-sm text-blue-800 mt-2 ml-4 list-decimal space-y-1">
-              <li>Download the shapefile ZIP</li>
-              <li>Open it in QGIS</li>
+              <li>Open the downloaded ZIP in QGIS</li>
               <li>Make your edits (adjust zones, attributes, etc.)</li>
               <li>Save and export as shapefile</li>
               <li>Re-package as ZIP file</li>
@@ -141,11 +124,11 @@
 
           <!-- Result Details -->
           <div class="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
-            <div>
+            <div v-if="processResult.total_zones != null">
               <p class="text-xs text-muted-foreground">Total Zones</p>
               <p class="text-lg font-semibold">{{ processResult.total_zones }}</p>
             </div>
-            <div>
+            <div v-if="processResult.filename">
               <p class="text-xs text-muted-foreground">Filename</p>
               <p class="text-sm font-medium truncate">{{ processResult.filename }}</p>
             </div>
@@ -158,7 +141,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { CheckCircle2, Download, Info, FileCode, Cpu, Loader2 } from 'lucide-vue-next'
+import { CheckCircle2, Info, FileCode, Cpu, Loader2 } from 'lucide-vue-next'
 import Card from '@/components/ui/Card.vue'
 import Button from '@/components/ui/Button.vue'
 import Alert from '@/components/ui/Alert.vue'
@@ -200,7 +183,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:editedShapefile', 'generate', 'download-for-edit', 'process'])
+const emit = defineEmits(['update:editedShapefile', 'generate', 'process'])
 
 const editedShapefileModel = computed({
   get: () => props.editedShapefile,

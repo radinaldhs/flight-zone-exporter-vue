@@ -56,7 +56,6 @@
           :process-result="processResult"
           :loading="loading"
           @generate="handleGenerateShapefile"
-          @download-for-edit="handleDownloadShapefileForEdit"
           @process="handleProcess"
         />
 
@@ -213,11 +212,7 @@ const handleUploadToArcGIS = async () => {
   await store.uploadToArcGIS()
 }
 
-const handleDownloadShapefileForEdit = async () => {
-  await store.downloadShapefileForEdit()
-}
-
-const handleDownloadFinalUpload = async () => {
-  await store.downloadFinalUpload()
+const handleDownloadFinalUpload = () => {
+  store.downloadFinalUpload()
 }
 </script>

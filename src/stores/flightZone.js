@@ -31,6 +31,11 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
   const processResult = ref(null)
   const spkCheckResult = ref(null)
 
+  // In-memory zip from /api/kml/process — kept until the user uploads to ArcGIS.
+  // The matching filename is what the server suggested via Content-Disposition.
+  const processedZipBlob = ref(null)
+  const processedZipFilename = ref(null)
+
   // Workflow path tracking
   const workflowPath = ref(null) // null | 'quick' | 'edit'
   const editingPhase = ref(null) // null | 'generated' | 'downloaded' | 'uploaded'
@@ -212,6 +217,8 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
     successMessage.value = null
     currentStep.value = 1
     processResult.value = null
+    processedZipBlob.value = null
+    processedZipFilename.value = null
     spkCheckResult.value = null
 
     // Reset cascade state
@@ -261,6 +268,8 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
     editPathStep.value = 1
     editedShapefileFile.value = null
     processResult.value = null
+    processedZipBlob.value = null
+    processedZipFilename.value = null
     currentStep.value = 1
     error.value = null
     successMessage.value = null
@@ -320,6 +329,25 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
     }
   }
 
+  // Trigger a browser download for an in-memory blob.
+  const _saveBlobAsFile = (blob, filename) => {
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', filename)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+  }
+
+  // Pull `filename="..."` out of a Content-Disposition header.
+  const _filenameFromDisposition = (disposition, fallback) => {
+    if (!disposition) return fallback
+    const match = /filename\*?=(?:UTF-8'')?["']?([^"';]+)["']?/i.exec(disposition)
+    return match ? decodeURIComponent(match[1]) : fallback
+  }
+
   const generateShapefile = async () => {
     if (!canGenerateShapefile.value) {
       error.value = 'Please upload KML ZIP and enter SPK number'
@@ -335,17 +363,25 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
       formData.append('spk_number', spkNumber.value)
 
       const response = await flightZoneAPI.generateShapefile(formData)
-      successMessage.value = response.data.message
+      const filename = _filenameFromDisposition(
+        response.headers['content-disposition'],
+        `${spkNumber.value}_zones_for_edit.zip`
+      )
+      const totalZones = Number(response.headers['x-total-zones']) || null
+
+      _saveBlobAsFile(response.data, filename)
+
+      successMessage.value = `Shapefile generated — downloaded ${filename}. Edit in QGIS, then upload the edited ZIP below.`
       currentStep.value = 2
 
       // Update workflow state
       hasGeneratedShapefile.value = true
-      editingPhase.value = 'generated'
+      editingPhase.value = 'downloaded'
       if (workflowPath.value === 'edit') {
-        editPathStep.value = 3
+        editPathStep.value = 4 // skip the now-implicit download step
       }
 
-      return response.data
+      return { filename, total_zones: totalZones }
     } catch (err) {
       error.value = err.message
       throw err
@@ -375,8 +411,20 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
       }
 
       const response = await flightZoneAPI.processComplete(formData)
-      processResult.value = response.data
-      successMessage.value = response.data.message
+      const filename = _filenameFromDisposition(
+        response.headers['content-disposition'],
+        `${spkNumber.value}_final_upload.zip`
+      )
+      const totalZones = Number(response.headers['x-total-zones']) || null
+
+      processedZipBlob.value = response.data
+      processedZipFilename.value = filename
+      processResult.value = {
+        message: 'Processing complete. Ready to upload to ArcGIS.',
+        total_zones: totalZones,
+        filename
+      }
+      successMessage.value = processResult.value.message
       currentStep.value = 3
 
       // Update workflow state
@@ -387,7 +435,7 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
         editPathStep.value = 6
       }
 
-      return response.data
+      return processResult.value
     } catch (err) {
       error.value = err.message
       throw err
@@ -401,12 +449,21 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
       error.value = 'Please enter SPK number and Key ID'
       return
     }
+    if (!processedZipBlob.value) {
+      error.value = 'No processed ZIP in memory — run "Process Files" first.'
+      return
+    }
 
     loading.value = true
     error.value = null
 
     try {
       const formData = new FormData()
+      formData.append(
+        'final_zip',
+        processedZipBlob.value,
+        processedZipFilename.value || 'final_upload.zip'
+      )
       formData.append('spk_number', spkNumber.value)
       formData.append('key_id', keyId.value)
 
@@ -429,56 +486,17 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
     }
   }
 
-  const downloadShapefileForEdit = async () => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const response = await flightZoneAPI.downloadShapefileForEdit()
-      const url = window.URL.createObjectURL(new Blob([response.data]))
-      const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', 'zones_for_edit.zip')
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      window.URL.revokeObjectURL(url)
-
-      successMessage.value = 'Shapefile downloaded successfully'
-
-      // Update editing phase
-      editingPhase.value = 'downloaded'
-      // Stay on step 3, user will manually edit
-    } catch (err) {
-      error.value = err.message
-      throw err
-    } finally {
-      loading.value = false
+  // Re-saves the in-memory processed zip without hitting the backend.
+  const downloadFinalUpload = () => {
+    if (!processedZipBlob.value) {
+      error.value = 'No processed ZIP in memory yet.'
+      return
     }
-  }
-
-  const downloadFinalUpload = async () => {
-    loading.value = true
-    error.value = null
-
-    try {
-      const response = await flightZoneAPI.downloadFinalUpload()
-      const url = window.URL.createObjectURL(new Blob([response.data]))
-      const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', 'final_upload.zip')
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      window.URL.revokeObjectURL(url)
-
-      successMessage.value = 'Final upload ZIP downloaded successfully'
-    } catch (err) {
-      error.value = err.message
-      throw err
-    } finally {
-      loading.value = false
-    }
+    _saveBlobAsFile(
+      processedZipBlob.value,
+      processedZipFilename.value || `${spkNumber.value}_final_upload.zip`
+    )
+    successMessage.value = 'Final upload ZIP downloaded.'
   }
 
   return {
@@ -550,7 +568,6 @@ export const useFlightZoneStore = defineStore('flightZone', () => {
     generateShapefile,
     processFiles,
     uploadToArcGIS,
-    downloadShapefileForEdit,
     downloadFinalUpload
   }
 })

@@ -39,11 +39,11 @@
 
         <!-- Result Details -->
         <div class="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
-          <div>
+          <div v-if="processResult.total_zones != null">
             <p class="text-xs text-muted-foreground">Total Zones</p>
             <p class="text-lg font-semibold">{{ processResult.total_zones }}</p>
           </div>
-          <div>
+          <div v-if="processResult.filename">
             <p class="text-xs text-muted-foreground">Filename</p>
             <p class="text-sm font-medium truncate">{{ processResult.filename }}</p>
           </div>
